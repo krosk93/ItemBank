@@ -1,0 +1,17 @@
+name: ItemBank
+main: net.ark3l.ItemBank.ItemBankPlugin
+version: 1.0
+author: Arkel
+commands:
+    itembank:
+         description: Display help
+         usage: /<command> [add | remove]
+permissions:
+  itembank.*:
+    description: Allows access to all ItemBank commands
+  itembank.admin:
+    description: Allows the use of ItemBank admin commands (add, remove, reload)
+    default: op
+  itembank.use:
+    description: Allows the use of ItemBanks
+    default: true
