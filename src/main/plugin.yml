@@ -2,6 +2,7 @@ name: ItemBank
 main: net.ark3l.ItemBank.ItemBankPlugin
 version: 1.0.1
 author: Arkel
+depend: [Spout]
 commands:
     itembank:
          description: Display help
