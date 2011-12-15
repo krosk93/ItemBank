@@ -7,18 +7,28 @@
     <groupId>net.ark3l</groupId>
     <artifactId>ItemBank</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <name>ItemBank</name>
+    <url>http://dev.bukkit.org/server-mods/itembank/</url>
+    <description>ItemBank is a Bukkit plugin allows you to turn any chest into an 'ItemBank' that provides RPG style linked banking</description>
 
+    <!-- License -->
+    <licenses>
+        <license>
+            <name>GNU LESSER GENERAL PUBLIC LICENSE Version 3</name>
+            <url>http://www.gnu.org/licenses/lgpl.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <!-- Source code -->
+    <scm>
+        <developerConnection>scm:git:git@github.com:Arkel/${project.name}.git</developerConnection>
+        <connection>scm:git:git://github.com/Arkel/${project.name}.git</connection>
+        <url>https://github.com/Arkel/${project.name}</url>
+    </scm>
+
+    <!-- Repositories -->
     <repositories>
-         <repository>
-            <id>bukkit-repo</id>
-            <url>http://repo.bukkit.org</url>
-            <releases>
-                <updatePolicy>always</updatePolicy>
-            </releases>
-            <snapshots>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
         <repository>
             <id>spout-repo</id>
             <url>http://repo.getspout.org</url>
@@ -43,15 +53,8 @@
     <dependencies>
         <dependency>
             <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <type>jar</type>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
@@ -63,6 +66,7 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
     <build>
         <defaultGoal>clean install</defaultGoal>
         <plugins>
@@ -77,5 +81,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
