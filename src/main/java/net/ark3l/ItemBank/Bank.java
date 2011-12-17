@@ -33,4 +33,19 @@ class Bank {
         this.z = z;
     }
 
+    public boolean equals(Object obj) {
+        if(obj instanceof Bank) {
+            Bank bank = (Bank)obj;
+        if (this.worldname.equals(bank.worldname))
+            if (this.x == bank.x) {
+                if (this.y == bank.y) {
+                    if (this.z == bank.z) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 }
