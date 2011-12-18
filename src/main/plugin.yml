@@ -1,6 +1,6 @@
 name: ItemBank
 main: net.ark3l.ItemBank.ItemBankPlugin
-version: 1.0.1
+version: 1.0.3
 author: Arkel
 depend: [Spout]
 commands:

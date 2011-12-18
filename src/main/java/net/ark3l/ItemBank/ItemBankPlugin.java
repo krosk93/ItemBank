@@ -65,7 +65,7 @@ public class ItemBankPlugin extends JavaPlugin {
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (label.equalsIgnoreCase("itembank")) {
-            if (!sender.isOp()) {
+            if (!sender.hasPermission("itembank.admin")) {
                 sender.sendMessage(ChatColor.DARK_RED + "This command is only available to ops");
                 return true;
             }
@@ -76,22 +76,11 @@ public class ItemBankPlugin extends JavaPlugin {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
                 if (args[0].equalsIgnoreCase("add")) {
-                    if (!player.hasPermission("itembank.admin")) {
-                        sender.sendMessage(ChatColor.DARK_RED + "You don't have the permission to do that");
-                        return true;
-                    }
-
                     addBank(player);
                     return true;
                 }
 
                 if (args[0].equalsIgnoreCase("remove")) {
-
-                    if (!player.hasPermission("itembank.admin")) {
-                        sender.sendMessage(ChatColor.DARK_RED + "You don't have the permission to do that");
-                        return true;
-                    }
-
                     removeBank(player);
                     return true;
                 }
