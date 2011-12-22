@@ -21,7 +21,7 @@ package net.ark3l.ItemBank;
 
 import java.util.logging.Logger;
 
-class Log {
+public class Log {
 
     private static final Logger log = Logger.getLogger("Minecraft");
 

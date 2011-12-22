@@ -19,291 +19,304 @@ package net.ark3l.ItemBank;
 * /
 */
 
+import org.bukkit.Location;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import org.getspout.spoutapi.inventory.SpoutItemStack;
 
-import java.io.File;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.io.*;
+import java.util.*;
 
 public class BankManager {
 
-    private static final String mainDirectory = "plugins" + File.separator + "ItemBank" + File.separator;
+    private final ItemBankPlugin plugin;
 
-    private ArrayList<Bank> bankList;
-    public final LinkedList<String> playersUsingBanks = new LinkedList<String>();
+    private final File bankFile;
 
-    private static final String sqlite = "jdbc:sqlite:" + mainDirectory + "ItemBanksDB.sqlite";
+    public final HashMap<String, String> playersUsingBanks = new HashMap<String, String>();
+    private final HashMap<Integer, String> banks = new HashMap<Integer, String>();
 
-    public BankManager() {
+    public BankManager(ItemBankPlugin instance) {
 
-        File dataDir = new File(mainDirectory);
-        if (!dataDir.exists()) {
-            dataDir.mkdir();
+        plugin = instance;
+        bankFile = new File(instance.getDataFolder() + File.separator + "data" + File.separator + "banks");
+
+        try {
+            if (!bankFile.exists()) {
+                bankFile.getParentFile().mkdirs();
+                bankFile.createNewFile();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        if (!this.checkTable()) {
+        loadBanks();
+    }
+
+    private void loadBanks() {
+        List<String> banksText = getLinesFromFile(bankFile);
+
+        for (String str : banksText) {
+            Scanner sc = new Scanner(str);
+            sc.useDelimiter(";");
+
+            int hash = sc.nextInt();
+            String network = sc.next();
+
+            banks.put(hash, network);
+        }
+    }
+
+    private void saveBanks() {
+        List<String> banksAsStrings = new ArrayList<String>();
+        for (Map.Entry<Integer, String> integerEntry : banks.entrySet()) {
+            Map.Entry pairs = (Map.Entry) integerEntry;
+            int hash = pairs.getKey().hashCode();
+            String network = (String) pairs.getValue();
+            String line = hash + ";" + network;
+            banksAsStrings.add(line);
+        }
+        writeLinesToFile(banksAsStrings, bankFile);
+    }
+
+    /**
+     * Checks whether the given location contains an ItemBank using a hashcode for comparison to a known list
+     *
+     * @param location The location to check
+     * @return True if location contains an ItemBank
+     */
+    public boolean isItemBank(Location location) {
+        return banks.containsKey(location.hashCode());
+    }
+
+    /**
+     * Gets the name of the network that the ItemBank at the location belongs to
+     *
+     * @param location The location of the bank to get the network of
+     * @return The name of the banks network. Returns "default" if the location doesn't contain a bank
+     */
+    public String getNetwork(Location location) {
+        if (isItemBank(location)) {
+            return banks.get(location.hashCode());
+        } else {
+            return "default";
+        }
+    }
+
+    /**
+     * Adds an ItemBank
+     *
+     * @param location The location of the ItemBank
+     * @param network  The name of the network the ItemBank belongs to
+     */
+    public void addBank(Location location, String network) {
+        banks.put(location.hashCode(), network);
+        writeLineToFile(location.hashCode() + ";" + network, bankFile);
+    }
+
+    /**
+     * Removes an ItemBank
+     *
+     * @param location The location of the ItemBank to remove
+     */
+    public void removeBank(Location location) {
+        banks.remove(location.hashCode());
+
+        // Wipe the file, create a new one, and write to it
+        try {
+            bankFile.delete();
+            bankFile.createNewFile();
+            saveBanks();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Get the players Items on the specified network
+     *
+     * @param playerName The name of the player
+     * @param network    The network to retrieve the items from
+     * @return A list containing the Items
+     */
+    public List<SpoutItemStack> getItems(String playerName, String network) {
+        File f = new File(plugin.getDataFolder() + File.separator + "data" + File.separator + network + File.separator + playerName + ".bank");
+
+        // Create any missing stuff
+        if (!f.exists()) {
             try {
-                Log.info("Creating new tables");
-                createTables();
-            } catch (SQLException e) {
-                Log.severe("SQL Exception");
+                f.getParentFile().mkdirs();
+                f.createNewFile();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-    }
 
-    private void createTables() throws SQLException {
-        Connection conn = this.connection();
-        Statement st = conn.createStatement();
-        st.executeUpdate("CREATE TABLE banks (world VARCHAR(255), x INT, y INT, z INT);");
-        st.executeUpdate("CREATE TABLE items (owner VARCHAR(255), itemID INT, amount INT);");
-    }
+        ArrayList<SpoutItemStack> itemStacks = new ArrayList<SpoutItemStack>();
+        List<String> lines = getLinesFromFile(f);
 
-    private boolean checkTable() {
-        Connection conn = null;
-        ResultSet rs = null;
-        boolean result = false;
-
-        try {
-            conn = this.connection();
-            DatabaseMetaData dbm = conn.getMetaData();
-            rs = dbm.getTables(null, null, "banks", null);
-            result = rs.next();
-        } catch (SQLException ex) {
-            Log.severe("Table check failed: " + ex);
-            return false;
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException ex) {
-                Log.severe("Failed to close connection");
-            }
+        for (String line : lines) {
+            itemStacks.add(stringToItemStack(line));
         }
 
-        return result;
+        return itemStacks;
     }
 
     /**
-     * Check whether an item bank exists at the specified location
-     * @param world the world
-     * @param x the x-coordinate of the location
-     * @param y the y-coordinate of the location
-     * @param z the z-coordinate of the location
-     * @return true if the block at the given location is an item bank
+     * Save the items for the player on the specified network
+     *
+     * @param playerName The player's name
+     * @param network    The network to save the items on
+     * @param items      An array containing the items
      */
-    public boolean isItemBank(String world, int x, int y, int z) {
-        Bank b = new Bank(world, x, y, z);
-        return bankList.contains(b);
-    }
+    public void saveItems(String playerName, String network, ItemStack[] items) {
+        File f = new File(plugin.getDataFolder() + File.separator + "data" + File.separator + network + File.separator + playerName + ".bank");
 
-    private Connection connection() {
-        try {
-            Class.forName("org.sqlite.JDBC");
-            return DriverManager.getConnection(sqlite);
-        } catch (ClassNotFoundException e) {
-            Log.severe("Couldn't find SQLite database driver");
-            e.printStackTrace();
-        } catch (SQLException e1) {
-            Log.severe("SQL Exception");
-            e1.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * Initialize by loading the bankList from the database
-     */
-    public void initialize() {
-        Connection conn = null;
-        PreparedStatement ps = null;
-
-        try {
-            conn = this.connection();
-            ps = conn.prepareStatement("SELECT * FROM banks;");
-            ResultSet results = ps.executeQuery();
-            bankList = new ArrayList<Bank>();
-
-            while (results != null && results.next()) {
-                Bank b = new Bank(results.getString(1), results.getInt(2), results.getInt(3), results.getInt(4));
-                bankList.add(b);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (ps != null) {
-                    ps.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException ex) {
-                Log.severe("Failed to close connection");
-            }
-        }
-    }
-
-    /**
-     * Add the bank to the database and list
-     * @param bank the bank to add
-     */
-    public void addBank(Bank bank) {
-        bankList.add(bank);
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-
-        try {
-            conn = this.connection();
-            ps = conn.prepareStatement("INSERT INTO banks (world, x, y, z) VALUES(?,?,?,?)");
-            ps.setString(1, bank.worldname);
-            ps.setInt(2, bank.x);
-            ps.setInt(3, bank.y);
-            ps.setInt(4, bank.z);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (ps != null) {
-                    ps.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException ex) {
-                Log.severe("Failed to close connection");
-            }
+        // Create the folder for the network if it doesn't exist
+        if (!f.getParentFile().exists()) {
+            f.getParentFile().mkdirs();
         }
 
-    }
-
-    /**
-     * Remove the given bank from the database and list
-     * @param bank the bank to remove
-     */
-    public void removeBank(Bank bank) {
-        bankList.remove(bank);
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-
-        try {
-            conn = this.connection();
-            ps = conn.prepareStatement("DELETE FROM banks WHERE world = ? AND x = ? AND y = ? AND z = ?");
-            ps.setString(1, bank.worldname);
-            ps.setInt(2, bank.x);
-            ps.setInt(3, bank.y);
-            ps.setInt(4, bank.z);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (ps != null) {
-                    ps.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException ex) {
-                Log.severe("Failed to close connection");
-            }
+        // Wipe the file and save a new one in its place
+        if (f.exists()) {
+            f.delete();
         }
-
-    }
-
-    /**
-     * Save the given items in the database as the given player
-     * @param playerName the name of the player who owns the items
-     * @param items an array containing the items to add to the database
-     */
-    public void saveItems(String playerName, ItemStack[] items) {
-        Connection conn = null;
-        PreparedStatement ps = null;
-
         try {
-            conn = this.connection();
-            ps = conn.prepareStatement("DELETE FROM items WHERE owner = ?");
-            ps.setString(1, playerName);
-            ps.executeUpdate();
-
+            f.createNewFile();
+            List<String> itemsAsStrings = new ArrayList<String>();
             for (ItemStack i : items) {
-                if (i != null) {
-                    ps = conn.prepareStatement("INSERT INTO items (owner, itemID, amount) VALUES (?,?,?)");
-                    ps.setString(1, playerName);
-                    ps.setInt(2, i.getTypeId());
-                    ps.setInt(3, i.getAmount());
-                    ps.executeUpdate();
-                }
+                itemsAsStrings.add(itemStackToString(i));
             }
-        } catch (SQLException e) {
+            writeLinesToFile(itemsAsStrings, f);
+        } catch (IOException e) {
+            Log.severe("Error creating file " + f.getPath());
             e.printStackTrace();
-        } finally {
-            try {
-                if (ps != null) {
-                    ps.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException ex) {
-                Log.severe("Failed to close connection");
-            }
         }
 
     }
 
     /**
-     * Retrieve a players items from the database
-     * @param playerName the name of the player to retrieve items for
-     * @return an ArrayList containing the items
+     * Writes a line to a file
+     *
+     * @param line The line to be written
+     * @param file The file to write to
      */
-    public ArrayList<ItemStack> getItems(String playerName) {
-
-        ArrayList<ItemStack> items = new ArrayList<ItemStack>();
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-
+    private void writeLineToFile(String line, File file) {
         try {
-            conn = this.connection();
-            ps = conn.prepareStatement("SELECT * FROM items WHERE owner = ?");
-            ps.setString(1, playerName);
-            rs = ps.executeQuery();
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+            bw.write(line);
+            bw.newLine();
+            bw.close();
+        } catch (IOException e) {
+            Log.severe("Error writing to file " + file.getPath());
+            e.printStackTrace();
+        }
+    }
 
-            while (rs.next()) {
-                items.add(new ItemStack(rs.getInt("itemID"), rs.getInt("amount")));
+    /**
+     * Write several lines to a file
+     *
+     * @param lines A list containing the lines to be written
+     * @param file
+     */
+    private void writeLinesToFile(List<String> lines, File file) {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+            for (String line : lines) {
+                bw.write(line);
+                bw.newLine();
+            }
+            bw.close();
+        } catch (IOException e) {
+            Log.severe("Error writing to file " + file.getPath());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Gets all the lines from a file
+     *
+     * @param file The file to retrieve the lines from
+     * @return A list containing the lines retrieved from the file
+     */
+    private List<String> getLinesFromFile(File file) {
+        ArrayList<String> lines = new ArrayList<String>();
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(file))));
+            String strLine;
+
+            while ((strLine = br.readLine()) != null) {
+                if (!strLine.isEmpty())
+                    lines.add(strLine);
             }
 
-        } catch (SQLException e) {
+            br.close();
+        } catch (Exception e) {
+            Log.severe("Error reading file " + file.getPath());
             e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (ps != null) {
-                    ps.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException ex) {
-                Log.severe("Failed to close connection");
+        }
+        return lines;
+    }
+
+    /**
+     * Serializes an ItemStack, turning it into a series of strings seperated by semi-colons
+     *
+     * @param itemstack The ItemStack to serialize
+     * @return A string in the format ITEMID;AMOUNT;DATA;DURABILITY;ENCHANTMENTID;ENCHANTMENTLEVEL;ENCHA....
+     */
+    private String itemStackToString(ItemStack itemstack) {
+        StringBuilder sb = new StringBuilder();
+
+        if (itemstack != null) {
+            sb.append(itemstack.getTypeId());
+            sb.append(";");
+            sb.append(itemstack.getAmount());
+            sb.append(";");
+            sb.append(itemstack.getData().getData());
+            sb.append(";");
+            sb.append(itemstack.getDurability());
+            for (Map.Entry<Enchantment, Integer> enchantmentEntry : itemstack.getEnchantments().entrySet()) {
+                Map.Entry pairs = (Map.Entry) enchantmentEntry;
+                Enchantment ench = (Enchantment) pairs.getKey();
+                int level = (Integer) pairs.getValue();
+                sb.append(";").append(ench.getId()).append(";").append(level);
             }
         }
 
-        return items;
+        return sb.toString();
     }
 
+    /**
+     * Converts a string into a SpoutItemStack
+     *
+     * @param string A string in the format ITEMID;AMOUNT;DATA;DURABILITY;ENCHANTMENTID;ENCHANTMENTLEVEL;ENCHA....
+     * @return The ItemStack produced by the string
+     */
+    private SpoutItemStack stringToItemStack(String string) {
+        Scanner sc = new Scanner(string);
+        sc.useDelimiter(";");
+
+        int typeid = sc.nextInt();
+        int amount = sc.nextInt();
+        byte data = sc.nextByte();
+        int durability = sc.nextInt();
+
+        SpoutItemStack itemStack = new SpoutItemStack(typeid, amount, data);
+
+        while (sc.hasNextInt()) {
+            int id = sc.nextInt();
+            int level = sc.nextInt();
+            try {
+                itemStack.addEnchantment(Enchantment.getById(id), level);
+            } catch (IllegalArgumentException e) {
+                itemStack.addUnsafeEnchantment(Enchantment.getById(id), level);
+            }
+        }
+
+        itemStack.setDurability((short) durability);
+
+        return itemStack;
+    }
 
 }
-

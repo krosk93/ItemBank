@@ -19,9 +19,11 @@ package net.ark3l.ItemBank;
 * /
 */
 
+import net.ark3l.ItemBank.Listeners.ItemBankBlockListener;
 import net.ark3l.ItemBank.Listeners.ItemBankInventoryListener;
 import net.ark3l.ItemBank.Listeners.ItemBankPlayerListener;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -36,9 +38,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class ItemBankPlugin extends JavaPlugin {
 
-    private ItemBankInventoryListener inventoryListener;
-    private ItemBankPlayerListener playerListener;
-
     public BankManager bankManager;
 
 
@@ -48,15 +47,16 @@ public class ItemBankPlugin extends JavaPlugin {
 
     public void onEnable() {
 
-        bankManager = new BankManager();
-        bankManager.initialize();
+        bankManager = new BankManager(this);
 
-        playerListener = new ItemBankPlayerListener(this);
-        inventoryListener = new ItemBankInventoryListener(this);
+        ItemBankPlayerListener playerListener = new ItemBankPlayerListener(this);
+        ItemBankInventoryListener inventoryListener = new ItemBankInventoryListener(this);
+        ItemBankBlockListener blockListener = new ItemBankBlockListener(this);
 
         final PluginManager pm = getServer().getPluginManager();
         pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
         pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
+        pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Highest, this);
         pm.registerEvent(Event.Type.CUSTOM_EVENT, inventoryListener, Priority.Normal, this);
 
         Log.info(this + " enabled");
@@ -71,16 +71,14 @@ public class ItemBankPlugin extends JavaPlugin {
             }
         }
 
-        if (args.length == 1) {
+        if (args.length > 0) {
 
             if (sender instanceof Player) {
                 Player player = (Player) sender;
                 if (args[0].equalsIgnoreCase("add")) {
-                    addBank(player);
+                    addBank(player, args.length > 1 ? args[1] : null);
                     return true;
-                }
-
-                if (args[0].equalsIgnoreCase("remove")) {
+                } else if (args[0].equalsIgnoreCase("remove")) {
                     removeBank(player);
                     return true;
                 }
@@ -89,22 +87,31 @@ public class ItemBankPlugin extends JavaPlugin {
         return false;
     }
 
-    private void addBank(Player player) {
+    private void addBank(Player player, String arg) {
+        if (arg == null) {
+            arg = "default";
+        }
+
         Block b = player.getTargetBlock(null, 10);
         if (b.getType() != Material.CHEST) {
             player.sendMessage(ChatColor.DARK_RED + "The block you are looking at is not a chest");
             return;
         }
-        Bank bank = new Bank(player.getWorld().getName(), b.getX(), b.getY(), b.getZ());
-        bankManager.addBank(bank);
+        Location bankLocation = new Location(player.getWorld(), b.getX(), b.getY(), b.getZ());
+
+        if (bankManager.isItemBank(bankLocation)) {
+            player.sendMessage(ChatColor.DARK_RED + "That block is already an ItemBank");
+            return;
+        }
+        bankManager.addBank(bankLocation, arg);
 
         Block other = checkForAdjacentChests(b);
         if (other != null) {
-            Bank bank2 = new Bank(player.getWorld().getName(), other.getX(), other.getY(), other.getZ());
-            bankManager.addBank(bank2);
+            Location otherBankLocation = new Location(player.getWorld(), other.getX(), other.getY(), other.getZ());
+            bankManager.addBank(otherBankLocation, arg);
         }
 
-        player.sendMessage(ChatColor.DARK_GREEN + "ItemBank added");
+        player.sendMessage(ChatColor.DARK_GREEN + "ItemBank added on the " + ChatColor.WHITE + arg + ChatColor.DARK_GREEN + " network");
     }
 
     private void removeBank(Player player) {
@@ -114,21 +121,16 @@ public class ItemBankPlugin extends JavaPlugin {
             return;
         }
 
-        if (bankManager.isItemBank(player.getWorld().getName(), b.getX(), b.getY(), b.getZ())) {
-
-            Bank bank = new Bank(player.getWorld().getName(), b.getX(), b.getY(), b.getZ());
-            bankManager.removeBank(bank);
-
+        if (bankManager.isItemBank(b.getLocation())) {
+            bankManager.removeBank(b.getLocation());
             player.sendMessage(ChatColor.DARK_GREEN + "ItemBank removed");
         } else {
             player.sendMessage(ChatColor.DARK_RED + "The block you are looking at is not a bank");
         }
 
         Block other = checkForAdjacentChests(b);
-
         if (other != null) {
-            Bank bank2 = new Bank(player.getWorld().getName(), other.getX(), other.getY(), other.getZ());
-            bankManager.removeBank(bank2);
+            bankManager.removeBank(other.getLocation());
         }
     }
 

@@ -27,76 +27,61 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
+import org.getspout.spoutapi.inventory.SpoutItemStack;
+import org.getspout.spoutapi.player.SpoutPlayer;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ItemBankPlayerListener extends PlayerListener {
 
-    private final ItemBankPlugin plugin;
     private final BankManager bm;
 
     public ItemBankPlayerListener(ItemBankPlugin plugin) {
-        this.plugin = plugin;
         this.bm = plugin.bankManager;
     }
 
     @Override
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event == null)
-            return;
-        if (event.isCancelled())
-            return;
-
-
         Block block = event.getClickedBlock();
         if (block == null) {
             return;
         }
-        Location l = block.getLocation();
-        Player player = event.getPlayer();
 
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && block.getType() == Material.CHEST && bm.isItemBank(player.getWorld().getName(), l.getBlockX(), l.getBlockY(), l.getBlockZ())) {
-            if (!player.hasPermission("itembank.use")) {
-                player.sendMessage(ChatColor.DARK_RED + "You don't have the permission to do that");
-                event.setCancelled(true);
-                return;
-            }
+        Location l = block.getLocation();
+        SpoutPlayer player = (SpoutPlayer) event.getPlayer();
+
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && block.getType() == Material.CHEST && bm.isItemBank(l)) {
+            String network = bm.getNetwork(l);
+
             if (player.getGameMode().equals(GameMode.CREATIVE)) {
                 player.sendMessage(ChatColor.DARK_RED + "You can't do that in creative mode!");
                 event.setCancelled(true);
-                return;
-            }
+            } else if (bm.playersUsingBanks.containsKey(player.getName())) {
+                player.sendMessage((ChatColor.DARK_RED + "You are already using a bank"));
+                event.setCancelled(true);
+            } else if (!player.hasPermission("itembank." + bm.getNetwork(l)) && !player.hasPermission("itembank.admin")) {
+                player.sendMessage(ChatColor.DARK_RED + "You don't have permission to use " + network + " banks");
+                event.setCancelled(true);
+            } else {
 
-            ArrayList<ItemStack> accContent = bm.getItems(player.getName());
-            ItemStack[] content = new ItemStack[54];
-            for (int i = 0; i < accContent.size(); i++) {
-                content[i] = accContent.get(i);
-            }
 
-            net.minecraft.server.ItemStack[] mcContents = new net.minecraft.server.ItemStack[54];
+                VirtualLargeChest virtualChest = new VirtualLargeChest(Character.toUpperCase(network.charAt(0)) + network.substring(1) + " bank");
+                List<SpoutItemStack> accContent = bm.getItems(player.getName(), network);
 
-            for (int i = 0; i < content.length; i++) {
-                if (content[i] != null) {
-                    mcContents[i] = new net.minecraft.server.ItemStack(content[i].getTypeId(), content[i].getAmount(), content[i].getDurability());
+                for (SpoutItemStack item : accContent) {
+                    virtualChest.addItem(item);
                 }
+
+                virtualChest.openChest(player);
+
+                bm.playersUsingBanks.put(player.getName(), network);
+
+                event.setCancelled(true);
             }
-            VirtualLargeChest chest = new VirtualLargeChest("Bank");
-
-            for (net.minecraft.server.ItemStack i : mcContents) {
-                chest.addItemStack(i);
-            }
-
-            chest.openChest(player);
-
-            bm.playersUsingBanks.add(player.getName());
-
-            event.setCancelled(true);
         }
     }
 

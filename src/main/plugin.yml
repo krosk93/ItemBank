@@ -1,12 +1,12 @@
 name: ItemBank
 main: net.ark3l.ItemBank.ItemBankPlugin
-version: 1.0.3
+version: 1.1.0
 author: Arkel
 depend: [Spout]
 commands:
     itembank:
          description: Display help
-         usage: /<command> [add | remove]
+         usage: /<command> [add | remove] [NETWORK]
 permissions:
   itembank.*:
     description: Allows access to all ItemBank commands

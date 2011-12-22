@@ -1,4 +1,4 @@
-package net.ark3l.ItemBank;
+package net.ark3l.ItemBank.Listeners;
 
 /*
 * ItemBank - In game item banking for Bukkit Minecraft servers with Spout
@@ -19,33 +19,24 @@ package net.ark3l.ItemBank;
 * /
 */
 
+import net.ark3l.ItemBank.BankManager;
+import net.ark3l.ItemBank.ItemBankPlugin;
+import org.bukkit.ChatColor;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockListener;
 
-class Bank {
-    final String worldname;
-    final int x;
-    final int y;
-    final int z;
+public class ItemBankBlockListener extends BlockListener {
 
-    public Bank(String worldname, int x, int y, int z) {
-        this.worldname = worldname;
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    private final BankManager bm;
+
+    public ItemBankBlockListener(ItemBankPlugin plugin) {
+        bm = plugin.bankManager;
     }
 
-    public boolean equals(Object obj) {
-        if(obj instanceof Bank) {
-            Bank bank = (Bank)obj;
-        if (this.worldname.equals(bank.worldname))
-            if (this.x == bank.x) {
-                if (this.y == bank.y) {
-                    if (this.z == bank.z) {
-                        return true;
-                    }
-                }
-            }
+    public void onBlockBreak(BlockBreakEvent event) {
+        if (bm.isItemBank(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage(ChatColor.RED + "You cannot destroy an ItemBank. Remove it first.");
         }
-        return false;
     }
-
 }

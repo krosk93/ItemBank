@@ -21,35 +21,27 @@ package net.ark3l.ItemBank.Listeners;
 
 import net.ark3l.ItemBank.BankManager;
 import net.ark3l.ItemBank.ItemBankPlugin;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.getspout.spoutapi.event.inventory.InventoryCloseEvent;
 import org.getspout.spoutapi.event.inventory.InventoryListener;
+import org.getspout.spoutapi.player.SpoutPlayer;
 
 public class ItemBankInventoryListener extends InventoryListener {
 
-    private final ItemBankPlugin plugin;
     private final BankManager bm;
 
     public ItemBankInventoryListener(ItemBankPlugin plugin) {
         super();
-        this.plugin = plugin;
         this.bm = plugin.bankManager;
     }
 
     @Override
     public void onInventoryClose(InventoryCloseEvent event) {
-        final Player player = event.getPlayer();
-        if (bm.playersUsingBanks.contains(player.getName())) {
+        SpoutPlayer player = (SpoutPlayer) event.getPlayer();
+        if (bm.playersUsingBanks.containsKey(player.getName())) {
             final Inventory inv = event.getInventory();
-            Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, new Runnable() {
-                public void run() {
-                    bm.saveItems(player.getName(), inv.getContents().clone());
-                }
-            });
+            bm.saveItems(player.getName(), bm.playersUsingBanks.get(player.getName()), inv.getContents());
             bm.playersUsingBanks.remove(player.getName());
         }
     }
-
 }
