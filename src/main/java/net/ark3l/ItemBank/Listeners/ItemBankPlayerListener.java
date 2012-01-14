@@ -19,8 +19,8 @@ package net.ark3l.ItemBank.Listeners;
 * /
 */
 
+import net.ark3l.InventoryUtils.VirtualChest.VirtualLargeChest;
 import net.ark3l.ItemBank.BankManager;
-import net.ark3l.ItemBank.Chest.VirtualLargeChest;
 import net.ark3l.ItemBank.ItemBankPlugin;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
