@@ -38,6 +38,7 @@ public class ItemBankInventoryListener extends InventoryListener {
     @Override
     public void onInventoryClose(InventoryCloseEvent event) {
         SpoutPlayer player = (SpoutPlayer) event.getPlayer();
+
         if (bm.playersUsingBanks.containsKey(player.getName())) {
             final Inventory inv = event.getInventory();
             bm.saveItems(player.getName(), bm.playersUsingBanks.get(player.getName()), inv.getContents());

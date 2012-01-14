@@ -19,6 +19,7 @@ package net.ark3l.ItemBank;
 * /
 */
 
+import net.ark3l.InventoryUtils.Persistence.PersistenceManager;
 import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -27,7 +28,7 @@ import org.getspout.spoutapi.inventory.SpoutItemStack;
 import java.io.*;
 import java.util.*;
 
-public class BankManager {
+public class BankManager extends PersistenceManager {
 
     private final ItemBankPlugin plugin;
 
@@ -37,6 +38,7 @@ public class BankManager {
     private final HashMap<Integer, String> banks = new HashMap<Integer, String>();
 
     public BankManager(ItemBankPlugin instance) {
+        super(instance);
 
         plugin = instance;
         bankFile = new File(instance.getDataFolder() + File.separator + "data" + File.separator + "banks");
@@ -134,189 +136,16 @@ public class BankManager {
     }
 
     /**
-     * Get the players Items on the specified network
-     *
-     * @param playerName The name of the player
-     * @param network    The network to retrieve the items from
-     * @return A list containing the Items
+     * Wrapper class to save items
+     */
+    public void saveItems(String playerName, String network, ItemStack[] contents) {
+        super.saveItems(new File(plugin.getDataFolder() + File.separator + "data" + File.separator + network + File.separator + playerName + ".bank"), contents);
+    }
+
+    /**
+     * Wrapper class to get items
      */
     public List<SpoutItemStack> getItems(String playerName, String network) {
-        File f = new File(plugin.getDataFolder() + File.separator + "data" + File.separator + network + File.separator + playerName + ".bank");
-
-        // Create any missing stuff
-        if (!f.exists()) {
-            try {
-                f.getParentFile().mkdirs();
-                f.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        ArrayList<SpoutItemStack> itemStacks = new ArrayList<SpoutItemStack>();
-        List<String> lines = getLinesFromFile(f);
-
-        for (String line : lines) {
-            itemStacks.add(stringToItemStack(line));
-        }
-
-        return itemStacks;
+        return super.getItems(new File(plugin.getDataFolder() + File.separator + "data" + File.separator + network + File.separator + playerName + ".bank"));
     }
-
-    /**
-     * Save the items for the player on the specified network
-     *
-     * @param playerName The player's name
-     * @param network    The network to save the items on
-     * @param items      An array containing the items
-     */
-    public void saveItems(String playerName, String network, ItemStack[] items) {
-        File f = new File(plugin.getDataFolder() + File.separator + "data" + File.separator + network + File.separator + playerName + ".bank");
-
-        // Create the folder for the network if it doesn't exist
-        if (!f.getParentFile().exists()) {
-            f.getParentFile().mkdirs();
-        }
-
-        // Wipe the file and save a new one in its place
-        if (f.exists()) {
-            f.delete();
-        }
-        try {
-            f.createNewFile();
-            List<String> itemsAsStrings = new ArrayList<String>();
-            for (ItemStack i : items) {
-                itemsAsStrings.add(itemStackToString(i));
-            }
-            writeLinesToFile(itemsAsStrings, f);
-        } catch (IOException e) {
-            Log.severe("Error creating file " + f.getPath());
-            e.printStackTrace();
-        }
-
-    }
-
-    /**
-     * Writes a line to a file
-     *
-     * @param line The line to be written
-     * @param file The file to write to
-     */
-    private void writeLineToFile(String line, File file) {
-        try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
-            bw.write(line);
-            bw.newLine();
-            bw.close();
-        } catch (IOException e) {
-            Log.severe("Error writing to file " + file.getPath());
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Write several lines to a file
-     *
-     * @param lines A list containing the lines to be written
-     * @param file
-     */
-    private void writeLinesToFile(List<String> lines, File file) {
-        try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
-            for (String line : lines) {
-                bw.write(line);
-                bw.newLine();
-            }
-            bw.close();
-        } catch (IOException e) {
-            Log.severe("Error writing to file " + file.getPath());
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Gets all the lines from a file
-     *
-     * @param file The file to retrieve the lines from
-     * @return A list containing the lines retrieved from the file
-     */
-    private List<String> getLinesFromFile(File file) {
-        ArrayList<String> lines = new ArrayList<String>();
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(file))));
-            String strLine;
-
-            while ((strLine = br.readLine()) != null) {
-                if (!strLine.isEmpty())
-                    lines.add(strLine);
-            }
-
-            br.close();
-        } catch (Exception e) {
-            Log.severe("Error reading file " + file.getPath());
-            e.printStackTrace();
-        }
-        return lines;
-    }
-
-    /**
-     * Serializes an ItemStack, turning it into a series of strings seperated by semi-colons
-     *
-     * @param itemstack The ItemStack to serialize
-     * @return A string in the format ITEMID;AMOUNT;DATA;DURABILITY;ENCHANTMENTID;ENCHANTMENTLEVEL;ENCHA....
-     */
-    private String itemStackToString(ItemStack itemstack) {
-        StringBuilder sb = new StringBuilder();
-
-        if (itemstack != null) {
-            sb.append(itemstack.getTypeId());
-            sb.append(";");
-            sb.append(itemstack.getAmount());
-            sb.append(";");
-            sb.append(itemstack.getData().getData());
-            sb.append(";");
-            sb.append(itemstack.getDurability());
-            for (Map.Entry<Enchantment, Integer> enchantmentEntry : itemstack.getEnchantments().entrySet()) {
-                Map.Entry pairs = (Map.Entry) enchantmentEntry;
-                Enchantment ench = (Enchantment) pairs.getKey();
-                int level = (Integer) pairs.getValue();
-                sb.append(";").append(ench.getId()).append(";").append(level);
-            }
-        }
-
-        return sb.toString();
-    }
-
-    /**
-     * Converts a string into a SpoutItemStack
-     *
-     * @param string A string in the format ITEMID;AMOUNT;DATA;DURABILITY;ENCHANTMENTID;ENCHANTMENTLEVEL;ENCHA....
-     * @return The ItemStack produced by the string
-     */
-    private SpoutItemStack stringToItemStack(String string) {
-        Scanner sc = new Scanner(string);
-        sc.useDelimiter(";");
-
-        int typeid = sc.nextInt();
-        int amount = sc.nextInt();
-        byte data = sc.nextByte();
-        int durability = sc.nextInt();
-
-        SpoutItemStack itemStack = new SpoutItemStack(typeid, amount, data);
-
-        while (sc.hasNextInt()) {
-            int id = sc.nextInt();
-            int level = sc.nextInt();
-            try {
-                itemStack.addEnchantment(Enchantment.getById(id), level);
-            } catch (IllegalArgumentException e) {
-                itemStack.addUnsafeEnchantment(Enchantment.getById(id), level);
-            }
-        }
-
-        itemStack.setDurability((short) durability);
-
-        return itemStack;
-    }
-
 }
