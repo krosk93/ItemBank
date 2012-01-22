@@ -22,6 +22,7 @@ package net.ark3l.ItemBank.Listeners;
 import net.ark3l.ItemBank.BankManager;
 import net.ark3l.ItemBank.ItemBankPlugin;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 
@@ -34,6 +35,10 @@ public class ItemBankBlockListener extends BlockListener {
     }
 
     public void onBlockBreak(BlockBreakEvent event) {
+        if(!Material.CHEST.equals(event.getBlock().getType())) {
+            return;
+        }
+
         if (bm.isItemBank(event.getBlock().getLocation())) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(ChatColor.RED + "You cannot destroy an ItemBank. Remove it first.");
