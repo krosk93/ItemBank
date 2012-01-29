@@ -21,21 +21,23 @@ package net.ark3l.ItemBank.Listeners;
 
 import net.ark3l.ItemBank.BankManager;
 import net.ark3l.ItemBank.ItemBankPlugin;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 import org.getspout.spoutapi.event.inventory.InventoryCloseEvent;
-import org.getspout.spoutapi.event.inventory.InventoryListener;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
-public class ItemBankInventoryListener extends InventoryListener {
+public class ItemBankInventoryListener implements Listener {
 
     private final BankManager bm;
 
     public ItemBankInventoryListener(ItemBankPlugin plugin) {
-        super();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.bm = plugin.bankManager;
     }
 
-    @Override
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onInventoryClose(InventoryCloseEvent event) {
         SpoutPlayer player = (SpoutPlayer) event.getPlayer();
 
