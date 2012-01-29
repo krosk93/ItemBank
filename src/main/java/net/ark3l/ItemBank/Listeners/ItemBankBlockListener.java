@@ -23,17 +23,21 @@ import net.ark3l.ItemBank.BankManager;
 import net.ark3l.ItemBank.ItemBankPlugin;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockListener;
 
-public class ItemBankBlockListener extends BlockListener {
+public class ItemBankBlockListener implements Listener {
 
     private final BankManager bm;
 
     public ItemBankBlockListener(ItemBankPlugin plugin) {
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
         bm = plugin.bankManager;
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(BlockBreakEvent event) {
         if(!Material.CHEST.equals(event.getBlock().getType())) {
             return;

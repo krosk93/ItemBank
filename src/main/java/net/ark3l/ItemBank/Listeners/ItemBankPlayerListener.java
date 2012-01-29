@@ -27,24 +27,27 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.getspout.spoutapi.inventory.SpoutItemStack;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
 import java.util.List;
 
-public class ItemBankPlayerListener extends PlayerListener {
+public class ItemBankPlayerListener implements Listener {
 
     private final BankManager bm;
 
     public ItemBankPlayerListener(ItemBankPlugin plugin) {
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.bm = plugin.bankManager;
     }
 
-    @Override
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
         if (block == null) {
@@ -86,7 +89,7 @@ public class ItemBankPlayerListener extends PlayerListener {
     }
 
 
-    @Override
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerQuit(PlayerQuitEvent event) {
         bm.playersUsingBanks.remove(event.getPlayer().getName());
     }

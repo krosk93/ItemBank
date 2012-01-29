@@ -30,9 +30,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 
@@ -46,18 +43,11 @@ public class ItemBankPlugin extends JavaPlugin {
     }
 
     public void onEnable() {
-
         bankManager = new BankManager(this);
 
-        ItemBankPlayerListener playerListener = new ItemBankPlayerListener(this);
-        ItemBankInventoryListener inventoryListener = new ItemBankInventoryListener(this);
-        ItemBankBlockListener blockListener = new ItemBankBlockListener(this);
-
-        final PluginManager pm = getServer().getPluginManager();
-        pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
-        pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
-        pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Highest, this);
-        pm.registerEvent(Event.Type.CUSTOM_EVENT, inventoryListener, Priority.Normal, this);
+        new ItemBankPlayerListener(this);
+        new ItemBankInventoryListener(this);
+        new ItemBankBlockListener(this);
 
         Log.info(this + " enabled");
     }
