@@ -1,8 +1,9 @@
-package net.ark3l.ItemBank;
+package net.ark3l.ItemBank.spout;
 
 /*
-* ItemBank - In game item banking for Bukkit Minecraft servers with Spout
+* ItemBank - In game item banking for Spout Minecraft servers
 * Copyright (C) 2011 Oliver Brown (Arkel)
+* Ported to Spout by Krosk
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -22,6 +23,7 @@ package net.ark3l.ItemBank;
 import net.ark3l.ItemBank.Listeners.ItemBankBlockListener;
 import net.ark3l.ItemBank.Listeners.ItemBankInventoryListener;
 import net.ark3l.ItemBank.Listeners.ItemBankPlayerListener;
+/*
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -31,9 +33,14 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+*/
+import org.spout.api.plugin.CommonPlugin;
+import org.spout.api.command.CommandSource;
+import org.spout.api.geo.World;
+import org.spout.api.player.Player;
+import org.spout.api.util.Named;
 
-
-public class ItemBankPlugin extends JavaPlugin {
+public class ItemBankPlugin extends CommonPlugin implements Named {
 
     public BankManager bankManager;
 

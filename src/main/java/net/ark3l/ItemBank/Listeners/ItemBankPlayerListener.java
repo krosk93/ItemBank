@@ -66,7 +66,7 @@ public class ItemBankPlayerListener implements Listener {
             } else if (bm.playersUsingBanks.containsKey(player.getName())) {
                 player.sendMessage((ChatColor.DARK_RED + "You are already using a bank"));
                 event.setCancelled(true);
-            } else if (!player.hasPermission("itembank." + bm.getNetwork(l)) && !player.hasPermission("itembank.admin")) {
+            } else if (!player.hasPermission("itembank." + network) && !player.hasPermission("itembank.admin") && !player.hasPermission("itembank.admin."+bm.getNetwork(l))) {
                 player.sendMessage(ChatColor.DARK_RED + "You don't have permission to use " + network + " banks");
                 event.setCancelled(true);
             } else {

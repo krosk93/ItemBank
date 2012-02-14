@@ -1,0 +1,4 @@
+name: ItemBank
+main: net.ark3l.ItemBank.spout.ItemBankPlugin
+version: 1.2.0
+platform: BOTH
