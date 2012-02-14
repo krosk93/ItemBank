@@ -54,7 +54,7 @@ public class ItemBankPlugin extends JavaPlugin {
 
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("itembank.admin")) {
+        if (!sender.hasPermission("itembank.admin") && !sender.hasPermission("itembank.admin" + (args.length > 1 ? "." + args[1] : null))) {
             sender.sendMessage(ChatColor.DARK_RED + "You don't have permission");
             return true;
         }
