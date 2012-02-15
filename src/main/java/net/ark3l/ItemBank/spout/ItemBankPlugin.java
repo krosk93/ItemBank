@@ -107,6 +107,7 @@ public class ItemBankPlugin extends CommonPlugin implements Named {
         if (arg == null) {
             arg = "default";
         }
+        player.sendMessage(ChatColor.DARK_RED + "Sorry, this feature is not currently supported");
 /*        Block b = player.getTargetBlock(null, 10);
         if (b.getType() != Material.CHEST) {
             player.sendMessage(ChatColor.DARK_RED + "The block you are looking at is not a chest");
@@ -130,6 +131,7 @@ public class ItemBankPlugin extends CommonPlugin implements Named {
     }
 
     private void removeBank(Player player) {
+    	player.sendMessage(ChatColor.DARK_RED + "Sorry, this feature is not currently supported");
 /*        Block b = player.getTargetBlock(null, 10);  
         if (b.getType() != Material.CHEST) {
             player.sendMessage(ChatColor.DARK_RED + "The block you are looking at is not a chest");
