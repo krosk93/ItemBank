@@ -36,9 +36,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 */
 import org.spout.api.plugin.CommonPlugin;
 import org.spout.api.command.CommandSource;
+import org.spout.api.command.CommandContext;
+import org.spout.api.command.annotated.Command;
+import org.spout.api.command.annotated.CommandPermissions;
+import org.spout.api.exception.CommandException;
 import org.spout.api.geo.World;
+import org.spout.api.geo.cuboid.Block;
+import org.spout.api.material.block.BlockFace;
 import org.spout.api.player.Player;
 import org.spout.api.util.Named;
+import org.spout.api.ChatColor;
 
 public class ItemBankPlugin extends CommonPlugin implements Named {
 
@@ -59,27 +66,41 @@ public class ItemBankPlugin extends CommonPlugin implements Named {
         Log.info(this + " enabled");
     }
 
+    @Command(aliases = {"ibadd", "itembankadd"}, usage = "[network]", desc = "Adds a bank to a certain network", max = 1)
+    @CommandPermissions("itembank.admin")
+    public void addibcommand(CommandContext args, CommandSource source) throws CommandException {
+    	if (source instanceof Player) {
+    		Player player = (Player) source;
+    		addBank(player, args.getString(1, null));
+    	} else {
+    		source.sendMessage("This command must be executed by a player");
+    	}
+    }
+    
+    @Command(aliases = {"ibrem", "ibremove", "itembankremove"}, desc = "Removes an itembank")
+    @CommandPermissions("itembank.admin")
+    public void removeibcommand(CommandContext args, CommandSource source) throws CommandException {
+    	if (source instanceof Player) {
+    		Player player = (Player) source;
+    		removeBank(player);
+    	} else {
+    		source.sendMessage("This command must be executed by a player");
+    	}
+    }
 
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("itembank.admin") && !sender.hasPermission("itembank.admin" + (args.length > 1 ? "." + args[1] : ""))) {
-            sender.sendMessage(ChatColor.DARK_RED + "You don't have permission");
-            return true;
-        }
-
-        if (args.length > 0) {
-
-            if (sender instanceof Player) {
-                Player player = (Player) sender;
-                if (args[0].equalsIgnoreCase("add")) {
-                    addBank(player, args.length > 1 ? args[1] : null);
-                    return true;
-                } else if (args[0].equalsIgnoreCase("remove")) {
-                    removeBank(player);
-                    return true;
-                }
-            }
-        }
-        return false;
+    @Command(aliases = {"itembank" , "ib"}, usage = "add/remove [network]", desc = "Old way", max = 2, min = 1)
+    @CommandPermissions("itembank.admin")
+    public void ibcommand(CommandContext args, CommandSource source) throws CommandException {
+    	if (source instanceof Player) {
+    		Player player = (Player) source;
+    		if (args.getString(0, null).equalsIgnoreCase("add")){
+    			addBank(player, args.getString(1, null));
+    		} else if(args.getString(0, null).equalsIgnoreCase("remove")){
+    			removeBank(player);
+    		}
+    	} else {
+    		source.sendMessage("This command must be executed by a player");
+    	}
     }
 
     private void addBank(Player player, String arg) {
