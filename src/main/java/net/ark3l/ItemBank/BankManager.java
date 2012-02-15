@@ -55,6 +55,10 @@ public class BankManager extends PersistenceManager {
         loadBanks();
     }
 
+    /**
+     * Loads the banks into a HashMap.
+     * 
+     */
     private void loadBanks() {
         List<String> banksText = getLinesFromFile(bankFile);
 
@@ -69,6 +73,10 @@ public class BankManager extends PersistenceManager {
         }
     }
 
+    /**
+     * Saves the banks to the database
+     * 
+     */
     private void saveBanks() {
         List<String> banksAsStrings = new ArrayList<String>();
         for (Map.Entry<Integer, String> integerEntry : banks.entrySet()) {
@@ -137,6 +145,10 @@ public class BankManager extends PersistenceManager {
 
     /**
      * Wrapper class to save items
+     * 
+     * @param playername The nick of the player
+     * @param network The network that items must be saved to
+     * @param contents The contents of the chest to be saved
      */
     public void saveItems(String playerName, String network, ItemStack[] contents) {
         super.saveItems(new File(plugin.getDataFolder() + File.separator + "data" + File.separator + network + File.separator + playerName + ".bank"), contents);
@@ -144,6 +156,9 @@ public class BankManager extends PersistenceManager {
 
     /**
      * Wrapper class to get items
+     * 
+     * @param playername The nick of the player
+     * @param network The network to obtain the items of
      */
     public List<SpoutItemStack> getItems(String playerName, String network) {
         return super.getItems(new File(plugin.getDataFolder() + File.separator + "data" + File.separator + network + File.separator + playerName + ".bank"));

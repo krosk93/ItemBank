@@ -32,7 +32,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-
+/**
+ * ItemBankPlugin 
+ * Main Class of the plugin
+ */
 public class ItemBankPlugin extends JavaPlugin {
 
     public BankManager bankManager;
@@ -74,7 +77,12 @@ public class ItemBankPlugin extends JavaPlugin {
         }
         return false;
     }
-
+/**
+ * Adds a Chest to the ItemBank database.
+ * 
+ * @param player The player that is executing the command
+ * @param arg The arguments given to the command
+ */
     private void addBank(Player player, String arg) {
         if (arg == null) {
             arg = "default";
@@ -102,6 +110,12 @@ public class ItemBankPlugin extends JavaPlugin {
         player.sendMessage(ChatColor.DARK_GREEN + "ItemBank added on the " + ChatColor.WHITE + arg + ChatColor.DARK_GREEN + " network");
     }
 
+    /**
+     * Removes an ItemBank from the database, returning the chest to normal operation
+     * 
+     * @param player
+     */
+    
     private void removeBank(Player player) {
         Block b = player.getTargetBlock(null, 10);  
         if (b.getType() != Material.CHEST) {
@@ -126,6 +140,11 @@ public class ItemBankPlugin extends JavaPlugin {
         }
     }
 
+    /**
+     * Checks if it is a double chest, by checking each block adjacent to it.
+     * @param b The block that has to be checked
+     * @return Block that has been found to be an adjacent chest.
+     */
     private Block checkForAdjacentChests(Block b) {
         if (b.getRelative(BlockFace.NORTH).getType() == Material.CHEST) {
             return b.getRelative(BlockFace.NORTH);
