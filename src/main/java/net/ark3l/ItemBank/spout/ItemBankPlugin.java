@@ -34,6 +34,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 */
+import org.spout.api.Game;
 import org.spout.api.plugin.CommonPlugin;
 import org.spout.api.command.CommandSource;
 import org.spout.api.command.CommandContext;
@@ -46,6 +47,10 @@ import org.spout.api.material.block.BlockFace;
 import org.spout.api.player.Player;
 import org.spout.api.util.Named;
 import org.spout.api.ChatColor;
+import org.spout.api.command.CommandRegistrationsFactory;
+import org.spout.api.command.annotated.AnnotatedCommandRegistrationFactory;
+import org.spout.api.command.annotated.SimpleAnnotatedCommandExecutorFactory;
+import org.spout.api.command.annotated.SimpleInjector;
 
 public class ItemBankPlugin extends CommonPlugin implements Named {
 
@@ -57,6 +62,10 @@ public class ItemBankPlugin extends CommonPlugin implements Named {
     }
 
     public void onEnable() {
+    	Game game = getGame();
+    	CommandRegistrationsFactory<Class<?>> commandRegFactory = new AnnotatedCommandRegistrationFactory(new SimpleInjector(this), new SimpleAnnotatedCommandExecutorFactory());
+
+		game.getRootCommand().addSubCommands(game, ItemBankPlugin.class, commandRegFactory);
         /*bankManager = new BankManager(this);
 
         new ItemBankPlayerListener(this);
