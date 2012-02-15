@@ -44,6 +44,11 @@
             <name>Maven Nuxeo Repository</name>
             <url>http://maven.nuxeo.org/nexus/content/groups/public/</url>
         </repository>
+        <repository>
+        	<id>acampadas-repo</id>
+        	<name>Repositorio Acampadas21</name>
+        	<url>http://acampadas21.net/nexus/content/groups/public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -71,6 +76,11 @@
         <dependency>
       		<groupId>org.spout</groupId>
       		<artifactId>spoutapi</artifactId>
+      		<version>dev-SNAPSHOT</version>
+    	</dependency>
+    	<dependency>
+      		<groupId>org.spout</groupId>
+      		<artifactId>vanilla</artifactId>
       		<version>dev-SNAPSHOT</version>
     	</dependency>
     </dependencies>

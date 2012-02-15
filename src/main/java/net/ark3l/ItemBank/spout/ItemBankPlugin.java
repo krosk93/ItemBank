@@ -19,7 +19,7 @@ package net.ark3l.ItemBank.spout;
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 * /
 */
-
+import net.ark3l.ItemBank.Log;
 import net.ark3l.ItemBank.Listeners.ItemBankBlockListener;
 import net.ark3l.ItemBank.Listeners.ItemBankInventoryListener;
 import net.ark3l.ItemBank.Listeners.ItemBankPlayerListener;
@@ -57,12 +57,12 @@ public class ItemBankPlugin extends CommonPlugin implements Named {
     }
 
     public void onEnable() {
-        bankManager = new BankManager(this);
+        /*bankManager = new BankManager(this);
 
         new ItemBankPlayerListener(this);
         new ItemBankInventoryListener(this);
         new ItemBankBlockListener(this);
-
+		*/
         Log.info(this + " enabled");
     }
 
@@ -103,17 +103,16 @@ public class ItemBankPlugin extends CommonPlugin implements Named {
     	}
     }
 
-    private void addBank(Player player, String arg) {
+/*    private void addBank(Player player, String arg) {
         if (arg == null) {
             arg = "default";
         }
-
         Block b = player.getTargetBlock(null, 10);
         if (b.getType() != Material.CHEST) {
             player.sendMessage(ChatColor.DARK_RED + "The block you are looking at is not a chest");
             return;
         }
-        Location bankLocation = new Location(player.getWorld(), b.getX(), b.getY(), b.getZ());
+        Location bankLocation = new Location(player.getEntity().getWorld(), b.getX(), b.getY(), b.getZ());
 
         if (bankManager.isItemBank(bankLocation)) {
             player.sendMessage(ChatColor.DARK_RED + "That block is already an ItemBank");
@@ -169,3 +168,4 @@ public class ItemBankPlugin extends CommonPlugin implements Named {
     }
 
 }
+*/
