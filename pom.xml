@@ -48,6 +48,12 @@
         	<id>acampadas-repo</id>
         	<name>Repositorio Acampadas21</name>
         	<url>http://acampadas21.net:8026/nexus-2.0/content/groups/public/</url>
+        	<releases>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+            <snapshots>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
         </repository>
     </repositories>
 
