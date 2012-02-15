@@ -27,6 +27,14 @@
         <url>https://github.com/Mytatrea/${project.name}</url>
     </scm>
 
+	<!-- Distribution Management -->
+	<distributionManagement>
+	  <repository>
+	    <id>acampadas-nexus</id>
+	    <url>http://acampadas21.net:8026/nexus-2.0/content/repositories/minecraft</url>
+	  </repository>
+	</distributionManagement>
+
     <!-- Repositories -->
     <repositories>
         <repository>
