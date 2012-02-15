@@ -47,7 +47,7 @@
         <repository>
         	<id>acampadas-repo</id>
         	<name>Repositorio Acampadas21</name>
-        	<url>http://acampadas21.net/nexus/content/groups/public/</url>
+        	<url>http://acampadas21.net:8026/nexus/content/groups/public/</url>
         </repository>
     </repositories>
 
