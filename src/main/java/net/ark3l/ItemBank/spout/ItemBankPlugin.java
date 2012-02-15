@@ -49,7 +49,7 @@ import org.spout.api.ChatColor;
 
 public class ItemBankPlugin extends CommonPlugin implements Named {
 
-    public BankManager bankManager;
+    //public BankManager bankManager;
 
 
     public void onDisable() {
@@ -103,11 +103,11 @@ public class ItemBankPlugin extends CommonPlugin implements Named {
     	}
     }
 
-/*    private void addBank(Player player, String arg) {
+    private void addBank(Player player, String arg) {
         if (arg == null) {
             arg = "default";
         }
-        Block b = player.getTargetBlock(null, 10);
+/*        Block b = player.getTargetBlock(null, 10);
         if (b.getType() != Material.CHEST) {
             player.sendMessage(ChatColor.DARK_RED + "The block you are looking at is not a chest");
             return;
@@ -126,11 +126,11 @@ public class ItemBankPlugin extends CommonPlugin implements Named {
             bankManager.addBank(otherBankLocation, arg);
         }
 
-        player.sendMessage(ChatColor.DARK_GREEN + "ItemBank added on the " + ChatColor.WHITE + arg + ChatColor.DARK_GREEN + " network");
+        player.sendMessage(ChatColor.DARK_GREEN + "ItemBank added on the " + ChatColor.WHITE + arg + ChatColor.DARK_GREEN + " network");*/
     }
 
     private void removeBank(Player player) {
-        Block b = player.getTargetBlock(null, 10);  
+/*        Block b = player.getTargetBlock(null, 10);  
         if (b.getType() != Material.CHEST) {
             player.sendMessage(ChatColor.DARK_RED + "The block you are looking at is not a chest");
             return;
@@ -150,10 +150,10 @@ public class ItemBankPlugin extends CommonPlugin implements Named {
         Block other = checkForAdjacentChests(b);
         if (other != null) {
             bankManager.removeBank(other.getLocation());
-        }
+        }*/
     }
 
-    private Block checkForAdjacentChests(Block b) {
+/*    private Block checkForAdjacentChests(Block b) {
         if (b.getRelative(BlockFace.NORTH).getType() == Material.CHEST) {
             return b.getRelative(BlockFace.NORTH);
         } else if (b.getRelative(BlockFace.EAST).getType() == Material.CHEST) {
@@ -165,7 +165,6 @@ public class ItemBankPlugin extends CommonPlugin implements Named {
         }
 
         return null;
-    }
+    }*/
 
 }
-*/
