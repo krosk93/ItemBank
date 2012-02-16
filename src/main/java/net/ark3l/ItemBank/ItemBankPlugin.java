@@ -57,11 +57,6 @@ public class ItemBankPlugin extends JavaPlugin {
 
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("itembank.admin") && !sender.hasPermission("itembank.admin" + (args.length > 1 ? "." + args[1] : ""))) {
-            sender.sendMessage(ChatColor.DARK_RED + "You don't have permission");
-            return true;
-        }
-
         if (args.length > 0) {
 
             if (sender instanceof Player) {
@@ -73,6 +68,8 @@ public class ItemBankPlugin extends JavaPlugin {
                     removeBank(player);
                     return true;
                 }
+            } else {
+            	sender.sendMessage("This command must be executed by a player.");
             }
         }
         return false;
@@ -84,6 +81,10 @@ public class ItemBankPlugin extends JavaPlugin {
  * @param arg The arguments given to the command
  */
     private void addBank(Player player, String arg) {
+    	if (!player.hasPermission("itembank.admin") && !player.hasPermission("itembank.admin" + arg)) {
+        player.sendMessage(ChatColor.DARK_RED + "You don't have permission");
+        return;
+    	}
         if (arg == null) {
             arg = "default";
         }
